@@ -6,18 +6,26 @@ class Backpropagation
 {
 public:
 	double targetError = 0.01;
-	int MaxEpoch = 50000;
+	int MaxEpoch = 500;
 	double currentError;
 	std::vector<std::vector<double>> TraningData;
 	std::vector <std::vector<double >> ExpectedOutputs;
+
+
+	std::vector<std::vector<double>> TestingData;
+	std::vector <std::vector<double >> ExpectedOutputs_Testing;
+
 	Backpropagation();
 
 	NeuralNet& train(NeuralNet& n);
+	NeuralNet& Teste(NeuralNet& n);
+
 
 private:
 	double ActualError;
 	double LearningRate;
 	void setLearningRate(double epoch);
+	int batchNumber = 1;
 
 protected:
 	void forward(NeuralNet& n, size_t row);
@@ -29,6 +37,30 @@ inline Backpropagation::Backpropagation()
 
 }
 
+inline NeuralNet& Backpropagation::Teste(NeuralNet& n)
+{
+
+	std::cout << "\n TESTE _ Teste_: \n";
+	double error = 0;
+	double OutputN = 0;
+	for (size_t dt = 0; dt < TestingData.size(); dt++)
+	{
+		auto output = n.GETOutput(TestingData[dt]);
+		std::vector<double> ExpectedOutput = ExpectedOutputs_Testing[dt];
+		for (size_t i = 0; i < ExpectedOutput.size(); i++)
+		{
+			if (ExpectedOutput[i] != round(output[i]))
+			{
+				error++;
+			}
+			OutputN++;
+		}
+	}
+
+	double Acuracy = 100 - (error / OutputN) * 100.0;
+	std::cout << "Acuracy = " << Acuracy << "%" << "\n";
+	return n;
+}
 
 inline NeuralNet& Backpropagation::train(NeuralNet& n)
 {
@@ -39,7 +71,7 @@ inline NeuralNet& Backpropagation::train(NeuralNet& n)
 
 	while (ActualError > targetError)
 	{
-		if (epoch >= MaxEpoch) break;
+		if (epoch >= MaxEpoch /  batchNumber) break;
 		double errors = 0.0;
 		setLearningRate(epoch);
 		for (size_t dt = 0; dt < traningSetSize; dt++)
@@ -52,15 +84,15 @@ inline NeuralNet& Backpropagation::train(NeuralNet& n)
 		}
 		ActualError = errors / traningSetSize;
 		std::cout << "Errors: \t" << errors << "\n";
-		std::cout << "Current Error: \t" << ActualError <<  "\n";
-		std::cout << "Current Epoch: \t" << epoch  << "\n"; 
+		std::cout << "Current Error: \t" << ActualError << "\n";
+		std::cout << "Current Epoch: \t" << epoch << "\n";
 		std::cout << "Current learning rate: \t" << LearningRate << "\n";
 		epoch++;
 	}
 
-	std::cout << "\n Resultado Final: \n" ;
+	std::cout << "\n Resultado Final: \n";
 	n.printAllLayers();
-	std::cout << "\n TESTE: \n";
+	std::cout << "\n TESTE _ Training: \n";
 	double error = 0;
 	double OutputN = 0;
 	for (size_t dt = 0; dt < traningSetSize; dt++)
@@ -77,15 +109,20 @@ inline NeuralNet& Backpropagation::train(NeuralNet& n)
 		}
 	}
 
-	double Acuracy = 100 - (error / OutputN) * 100.0 ;
-	std::cout << "Acuracy = " << Acuracy << "%"  << "\n";
+	double Acuracy = 100 - (error / OutputN) * 100.0;
+	std::cout << "Acuracy = " << Acuracy << "%" << "\n";
+	batchNumber++;
 	return n;
 }
 
 inline void Backpropagation::setLearningRate(double epoch)
 {
 	//y\:=\:0.5^{-2000/\left(x+2200\right)}\:-1.0
-	LearningRate =  pow(0.5, (-2000 / (epoch + 2200))) - 1.0;
+	LearningRate = pow(0.5, (-2000 / (epoch + 2200))) - 1.0 -0.05 * batchNumber;
+	if (LearningRate < 0.2)
+	{
+		LearningRate = 0.2;
+	}
 }
 
 inline void Backpropagation::forward(NeuralNet& n, size_t row)
@@ -101,12 +138,12 @@ inline void Backpropagation::backward(NeuralNet& n, size_t row)
 {
 	std::vector<double> ExpectedOutput = ExpectedOutputs[row];
 	//calcula primeiro o gradiente local da ultima camada e corrige os seus pesos
-	n.Layers[n.Layers.size() - 1].CalculateLocalGradients_Last(ExpectedOutput , LearningRate);
+	n.Layers[n.Layers.size() - 1].CalculateLocalGradients_Last(ExpectedOutput, LearningRate);
 	n.Layers[n.Layers.size() - 1].CALC_All_Local_X_Weight();
 
 	for (int i = n.Layers.size() - 2; i >= 1; i--)
 	{
-		n.Layers[i].CalculateLocalGradients(n.Layers[i + 1].LOCAL_X_WEIGHT ,  LearningRate);
+		n.Layers[i].CalculateLocalGradients(n.Layers[i + 1].LOCAL_X_WEIGHT, LearningRate);
 		if (i != 1)
 		{
 			n.Layers[i].CALC_All_Local_X_Weight();

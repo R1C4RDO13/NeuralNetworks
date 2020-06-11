@@ -25,13 +25,13 @@ NeuralNet::NeuralNet(int InputSize, int OutputSize)
 	INIT.isInitial = true;
 	Layers.push_back(INIT);
 	INIT.isInitial = true;
-	int neuronsInHidden =( (2.0 / 3.0) * InputSize) + OutputSize;
-	Layer Hidden = Layer(neuronsInHidden, InputSize);
+	int neuronsInHidden = InputSize - 40; //40 ; //20 ;
+	Layer Hidden = Layer(neuronsInHidden , InputSize);
 	Layers.push_back(Hidden);
-	/*Layer Hidden2 = Layer(neuronsInHidden, InputSize);
-	Layers.push_back(Hidden2);
-	Layer Hidden3 = Layer(neuronsInHidden, neuronsInHidden);
-	Layers.push_back(Hidden3);*/
+	//Layer Hidden2 = Layer(neuronsInHidden + 10 , neuronsInHidden + 20 );
+	//Layers.push_back(Hidden2);
+    //Layer Hidden3 = Layer(neuronsInHidden, neuronsInHidden + 10);
+	//Layers.push_back(Hidden3);
 	Layer Output = Layer(OutputSize, neuronsInHidden);
 	Layers.push_back(Output);
 

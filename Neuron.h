@@ -9,7 +9,7 @@ private:
 	std::vector<double> X;
 
 public:
-	void ThinQ(std::vector<double> Inputs);
+	void ThinQ();
 
 	//inicia todo o neuronio com valores aleatorios
 	void Neuron_INIT(int inputNUMBER);
@@ -19,6 +19,7 @@ public:
 	//incideValue
 	double Z;
 	double Y;
+	void setX(std::vector<double>& values) { X = values; }
 	void setOutputValue(double value);
 	void CorrectWeights(double LearningRate);
 	void calculateLocalGradientOutput(double ExpectedValue, double LearningRate);
@@ -35,12 +36,24 @@ void Neuron::Neuron_INIT(int inputNUMBER)
 	Weights.clear();
 	for (size_t i = 0; i < inputNUMBER; i++)
 	{
-		Weights.push_back(0);// ((double)rand()) / RAND_MAX);
+		Weights.push_back(((rand()%100)/100.0));
 	}
-	b = 0;// ((double)rand()) / RAND_MAX;
+	b = (((rand() % 100) /100.0));// ((double)rand()) / RAND_MAX;
 }
 
-inline void Neuron::ThinQ(std::vector<double> Inputs)
+std::vector<double> Clone(std::vector<double>& NeuronLayerPrev_Outputs)
+{
+	std::vector<double> clone;
+	for (size_t i = 0; i < NeuronLayerPrev_Outputs.size(); i++)
+	{
+		clone.push_back(NeuronLayerPrev_Outputs[i]);
+	}
+	return clone;
+}
+
+
+
+inline void Neuron::ThinQ()
 {
 	/*
 	X1	---- w11-----> E() + b = Z ... O(Z) ---> Y
@@ -48,11 +61,12 @@ inline void Neuron::ThinQ(std::vector<double> Inputs)
 	X2 ----- w12---
 	
 	*/
-	X = Inputs;
+	//X =  Clone(Inputs);
+	//setX(Inputs);
 	double Value = b;
-	for (size_t i = 0; i < Inputs.size(); i++)
+	for (size_t i = 0; i < X.size(); i++)
 	{
-		Value = Value + Inputs[i] * Weights[i];
+		Value = Value + X[i] * Weights[i];
 	}
 	Z = Value;
 	CONFIG tmp;
@@ -92,7 +106,7 @@ inline void Neuron::calculateLocalGradientOutput(double ExpectedValue , double L
 inline void Neuron::calculateLocalGradient(double SomaLastLocalGrad , double LearningRate)
 {
 	CONFIG tmp;
-	LocalGradient = SomaLastLocalGrad * Y * (1 - Y); //tmp.derivativeActivationFunction(Z);
+	LocalGradient = SomaLastLocalGrad * tmp.derivativeActivationFunction(Z);
 	CorrectWeights(LearningRate);
 }
 

@@ -2,6 +2,7 @@
 #include<vector>
 #include "Neuron.h"
 #include <math.h>
+#include <thread>
 
 class Layer
 {
@@ -37,9 +38,25 @@ Layer::Layer(int Size , int Prev_LayerSize)
 		NeuronLayer.push_back(N);
 	}
 }
+void ThinQ(Neuron n)
+{
+	n.ThinQ();
+	
+}
+/*
+std::vector<double> Clone (std::vector<double> NeuronLayerPrev_Outputs)
+{
+	std::vector<double> clone;
+	for (size_t i = 0; i < NeuronLayerPrev_Outputs.size(); i++)
+	{
+		clone.push_back(NeuronLayerPrev_Outputs[i]);
+	}
+	return clone;
+}*/
 
 inline void Layer::ThinQ_All(std::vector<double> NeuronLayerPrev_Outputs)
 {
+	std::vector<std::thread> threads;
 	if (isInitial)
 	{
 		for (size_t i = 0; i < NeuronLayer.size(); i++)
@@ -52,11 +69,30 @@ inline void Layer::ThinQ_All(std::vector<double> NeuronLayerPrev_Outputs)
 	{
 		for (size_t i = 0; i < NeuronLayer.size(); i++)
 		{
-			NeuronLayer[i].ThinQ(NeuronLayerPrev_Outputs);
+			NeuronLayer[i].setX(NeuronLayerPrev_Outputs);
+			NeuronLayer[i].ThinQ();
+			//if (NeuronLayer.size() - 1 == i)
+			//{
+			//	NeuronLayer[i].setX(NeuronLayerPrev_Outputs);
+			//	NeuronLayer[i].ThinQ();
+			//}
+			//else
+			//{
+
+			//	NeuronLayer[i].setX(NeuronLayerPrev_Outputs);
+			//	std::thread  thread(ThinQ, std::ref(NeuronLayer[i]));
+			//	//thread.detach();
+			//	threads.push_back(std::move(thread));
+			//}
 		}
+		/*for (size_t i = 0; i < threads.size(); i++)
+		{
+			threads[i].join();
+		}*/
 	}
 
 }
+
 
 
 inline void Layer::printLayer()

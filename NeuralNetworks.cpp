@@ -67,6 +67,57 @@ std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> re
 }
 
 
+std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> read_digits(std::string filename) {
+    // Reads a CSV file into a vector of <string, vector<int>> pairs where
+    // each pair represents <column name, column values>
+
+    // Create a vector of <string, int vector> pairs to store the result [0] atributos [1] resultados
+    std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> result;
+
+    // Create an input filestream
+    std::ifstream myFile(filename);
+
+    // Make sure the file is open
+    if (!myFile.is_open()) throw std::runtime_error("Could not open file");
+
+    // Helper vars
+    std::string line, colname;
+    int val;
+
+    while (std::getline(myFile, line))
+    {
+       
+        std::stringstream ss(line);
+        std::vector<double> lineNumber;
+        while (std::getline(ss, colname, ',')) {
+            lineNumber.push_back(std::stod(colname) / 16);
+        }
+
+        std::vector<double> classResult;
+        double resul = lineNumber.back() * 16;
+        for (size_t i = 0; i < 10; i++)
+        {
+            if (i == resul)
+            {
+                classResult.push_back(1);
+            }
+            else
+            {
+                classResult.push_back(0);
+            }            
+        }
+
+        lineNumber.pop_back();
+        result.first.push_back(lineNumber);
+        result.second.push_back(classResult);
+    }
+
+    // Close file
+    myFile.close();
+
+    return result;
+}
+
 double ConstFunction(std::vector<double> Outputs , std::vector<double> RealValues )		//Co
 {
 	double Cost = 0 ;
@@ -91,28 +142,73 @@ double ActivatonValue(std::vector<double> Inputs, std::vector<double> InputsWeig
 
 int main()
 {
-    auto readCSV = read_csv("C:\\Users\\ricar\\Desktop\\divorce.csv");
+   /* auto readCSV = read_csv("C:\\Users\\ricar\\Desktop\\divorce.csv");
     NeuralNet n =  NeuralNet(54, 1);
+    Backpropagation B = Backpropagation();
+ 
+     //mistura os dados de entrada de forma aleatoria
+     
+     while (readCSV.first.size() != 0)
+     {
+
+         double n = rand() % readCSV.first.size();
+
+
+         if (readCSV.first.size() < 85)
+         {
+             B.TestingData.push_back(readCSV.first[n]);
+             B.ExpectedOutputs_Testing.push_back(readCSV.second[n]);
+
+             readCSV.first.erase(readCSV.first.begin() + n);
+             readCSV.second.erase(readCSV.second.begin() + n);
+         }
+         else
+         {
+             B.TraningData.push_back(readCSV.first[n]);
+             B.ExpectedOutputs.push_back(readCSV.second[n]);
+
+             readCSV.first.erase(readCSV.first.begin() + n);
+             readCSV.second.erase(readCSV.second.begin() + n);
+         }
+     }
+
+
+     B.train(n);
+     B.Teste(n);*/
+
+    // std::cout << "Duvido que chegue aqui" ;
+    // 
+    
+    auto readCSV = read_digits("C:\\Users\\ricar\\Desktop\\Digits\\optdigits.tra");
+    NeuralNet n = NeuralNet(64, 10);
     Backpropagation B = Backpropagation();
 
     //mistura os dados de entrada de forma aleatoria
+    int count = 0;
     while (readCSV.first.size() != 0)
     {
 
-        double n = rand() % readCSV.first.size();
-
-        B.TraningData.push_back(readCSV.first[n]);
-        B.ExpectedOutputs.push_back(readCSV.second[n]);
-
-        readCSV.first.erase(readCSV.first.begin() + n);
-        readCSV.second.erase(readCSV.second.begin() + n);
-
+        double n_ = rand() % readCSV.first.size();
+        B.TraningData.push_back(readCSV.first[n_]);
+        B.ExpectedOutputs.push_back(readCSV.second[n_]);
+        readCSV.first.erase(readCSV.first.begin() + n_);
+        readCSV.second.erase(readCSV.second.begin() + n_);
+        count++;
+        if (count == 100)
+        {
+            B.train(n);
+            count = 0;
+            B.TraningData.clear();
+            B.ExpectedOutputs.clear();
+        }
     }
-
-   
     B.train(n);
 
-    std::cout << "Duvido que chegue aqui" ;
+    auto readCSV2 = read_digits("C:\\Users\\ricar\\Desktop\\Digits\\optdigits.tes");
+    B.ExpectedOutputs_Testing = readCSV2.second;
+    B.TestingData = readCSV2.first;
+
+    B.Teste(n);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
